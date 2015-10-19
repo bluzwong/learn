@@ -31,8 +31,12 @@ public class DynamicProxy {
             this.target = target;
         }
 
+        // http://guojuanjun.blog.51cto.com/277646/1221281/
+        // 代理类this传入invoke
+        // this.h.invoke(this, m3, null);
         @Override
         public Object invoke(Object o, Method method, Object[] objects) throws Throwable {
+
             Object result;
 
             String methodName = method.getName();
