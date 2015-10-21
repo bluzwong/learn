@@ -48,6 +48,8 @@ dependencies {
     compile 'org.codehaus.groovy:groovy:2.4.3:grooid'
     compile 'com.mcxiaoke.volley:library:1.0.19'
     compile 'com.google.code.gson:gson:2.2.4'
+    compile 'io.reactivex:rxjava:1.0.9'
+    compile 'io.reactivex:rxandroid:0.24.0'
 }
 
 tasks.withType(JavaCompile) {

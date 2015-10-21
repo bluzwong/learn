@@ -5,4 +5,5 @@ package com.github.bluzwong.learn_rx.httprequest;
  */
 public interface URLS {
     String VALUE_INDEX = "http://mt58866.xicp.net:66/valueindex.php";
+    String RESULT_INDEX = "http://mt58866.xicp.net:66/getvalue.php";
 }

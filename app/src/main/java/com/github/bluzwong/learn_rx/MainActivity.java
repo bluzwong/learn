@@ -9,10 +9,18 @@ import android.util.Log;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.github.bluzwong.learn_rx.httprequest.*;
+import com.github.bluzwong.learn_rx.httprequest.volley.RxVolleyHelper;
 import com.github.bluzwong.learn_rx.httprequest.volley.VolleyHelper;
+import rx.Observable;
+import rx.android.schedulers.AndroidSchedulers;
+import rx.functions.Action1;
+import rx.functions.Func1;
+import rx.functions.Func2;
+import rx.schedulers.Schedulers;
 
 import java.lang.ref.WeakReference;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 
@@ -23,11 +31,109 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         VolleyHelper.init(this.getApplicationContext());
-        goVolleyAsync();
+        RxVolleyHelper.init(this.getApplicationContext());
+
         goVolleySync();
+        goVolleyAsync();
+
+        goRxVolley();
+        goRxVolleyWithLambda();
+    }
+
+    static class Timer {
+        private long startTime;
+        void setStartTime() {
+            startTime = System.currentTimeMillis();
+        }
+        long getUsingTime() {
+            return System.currentTimeMillis() - startTime;
+        }
+
+        void printUsingTime(String owner) {
+            Log.i("httprequest", owner + " using time => " + getUsingTime() + " ms");
+        }
+    }
+
+    static class Values {
+        Value1 value1;
+        Value2 value2;
+
+        public Values(Value1 value1, Value2 value2) {
+            this.value1 = value1;
+            this.value2 = value2;
+        }
+    }
+
+    private void goRxVolley() {
+        Timer timer = new Timer();
+        timer.setStartTime();
+        RxVolleyHelper instance = RxVolleyHelper.getInstance();
+        instance.jsonRequest(URLS.VALUE_INDEX, null, ValueIndex.class)
+                .flatMap(new Func1<ValueIndex, Observable<Values>>() {
+                    @Override
+                    public Observable<Values> call(ValueIndex valueIndex) {
+                        return instance.jsonRequest(valueIndex.getUrl_value1(), null, Value1.class)
+                                .zipWith(instance.jsonRequest(valueIndex.getUrl_value2(), null, Value2.class),
+                                        new Func2<Value1, Value2, Values>() {
+                                            @Override
+                                            public Values call(Value1 value1, Value2 value2) {
+                                                return new Values(value1, value2);
+                                            }
+                                        });
+                    }
+                })
+                .map(new Func1<Values, Map<String, String>>() {
+                    @Override
+                    public Map<String, String> call(Values values) {
+                        HashMap<String, String> map = new HashMap<>();
+                        map.put("value1", values.value1.getValue1());
+                        map.put("value2", values.value2.getValue2());
+                        return map;
+                    }
+                })
+                .flatMap(new Func1<Map<String, String>, Observable<Result>>() {
+                    @Override
+                    public Observable<Result> call(Map<String, String> map) {
+                        return instance.jsonRequest(URLS.RESULT_INDEX, map, Result.class);
+                    }
+                })
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Action1<Result>() {
+                    @Override
+                    public void call(Result result) {
+                        Log.i("httprequest", "rx result => " + result);
+                        timer.printUsingTime("goRxVolley ");
+                    }
+                });
+    }
+
+
+    private void goRxVolleyWithLambda() {
+        Timer timer = new Timer();
+        timer.setStartTime();
+        RxVolleyHelper instance = RxVolleyHelper.getInstance();
+        instance.jsonRequest(URLS.VALUE_INDEX, null, ValueIndex.class)
+                .flatMap(valueIndex -> instance.jsonRequest(valueIndex.getUrl_value1(), null, Value1.class)
+                        .zipWith(instance.jsonRequest(valueIndex.getUrl_value2(), null, Value2.class), Values::new))
+                .map(values -> {
+                    HashMap<String, String> map = new HashMap<>();
+                    map.put("value1", values.value1.getValue1());
+                    map.put("value2", values.value2.getValue2());
+                    return map;
+                })
+                .flatMap(map -> instance.jsonRequest(URLS.RESULT_INDEX, map, Result.class))
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(result -> {
+                    Log.i("httprequest", "rx with lambda result => " + result);
+                    timer.printUsingTime("goRxVolleyWithLambda ");
+                });
     }
 
     private void goVolleyAsync() {
+        Timer timer = new Timer();
+        timer.setStartTime();
         VolleyHelper instance = VolleyHelper.getInstance();
         instance.jsonRequestAsync(URLS.VALUE_INDEX, null, ValueIndex.class, new Response.Listener<ValueIndex>() {
             // 第一层地狱
@@ -46,11 +152,13 @@ public class MainActivity extends AppCompatActivity {
                             HashMap<String, String> map = new HashMap<>();
                             map.put("value1", value1[0].getValue1());
                             map.put("value2", value2[0].getValue2());
-                            instance.jsonRequestAsync("http://mt58866.xicp.net:66/getvalue.php", map, Result.class, new Response.Listener<Result>() {
+                            instance.jsonRequestAsync(URLS.RESULT_INDEX, map, Result.class, new Response.Listener<Result>() {
                                 // 第三层地狱
                                 @Override
                                 public void onResponse(Result response) {
                                     Log.i("httprequest", "async got result => " + response);
+                                    timer.printUsingTime("goVolleyAsync ");
+
                                 }
                             }, new Response.ErrorListener() {
                                 @Override
@@ -103,6 +211,7 @@ public class MainActivity extends AppCompatActivity {
 
     static class MyHandler extends Handler {
         WeakReference<Activity> activityWeakReference;
+
         public MyHandler(Activity activity) {
             activityWeakReference = new WeakReference<Activity>(activity);
         }
@@ -111,13 +220,17 @@ public class MainActivity extends AppCompatActivity {
         public void handleMessage(Message msg) {
             // do with activity
             Activity activity = activityWeakReference.get();
-            Log.i("httprequest", "handle msg at main thread => " + msg.obj);
+            if (activity != null) {
+                Log.i("httprequest", "handle msg at main thread => " + msg.obj);
+            }
         }
     }
 
     private MyHandler handler = new MyHandler(this);
 
     private void goVolleySync() {
+        Timer timer = new Timer();
+        timer.setStartTime();
         VolleyHelper instance = VolleyHelper.getInstance();
         new Thread(new Runnable() {
             @Override
@@ -130,10 +243,11 @@ public class MainActivity extends AppCompatActivity {
                     map.put("value1", value1.getValue1());
                     map.put("value2", value2.getValue2());
 //                    Result result = instance.jsonRequest(index.getUrl_result(), map, Result.class);
-                    Result result = instance.jsonRequest("http://mt58866.xicp.net:66/getvalue.php", map, Result.class);
+                    Result result = instance.jsonRequest(URLS.RESULT_INDEX, map, Result.class);
                     Message message = new Message();
                     message.obj = result;
                     handler.sendMessage(message);
+                    timer.printUsingTime("goVolleySync ");
                 } catch (ExecutionException e) {
                     e.printStackTrace();
                 } catch (InterruptedException e) {
