@@ -10,6 +10,11 @@
         <activity
             android:name=".MainActivity"
             android:label="@string/app_name" >
+           
+        </activity>
+        <activity
+            android:name="com.github.bluzwong.learn_rx.TestGroovy"
+            android:label="@string/title_activity_test_groovy" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

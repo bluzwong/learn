@@ -12,7 +12,7 @@ import java.util.concurrent.TimeUnit;
  */
 public class RxLearning {
     public static void main(String[] args) {
-        // 最简单的
+       /* // 最简单的
         Observable.just("cccf")
                 .subscribe(System.out::println);
 
@@ -28,7 +28,7 @@ public class RxLearning {
                 .buffer(3, TimeUnit.SECONDS)
                 .map(s -> "interval : " + s)
                 .subscribe(System.out::println);
-
+*/
         ///? 不是很会用
         /*Observable.range(0, 10)
                 .groupBy(i -> i % 2)
