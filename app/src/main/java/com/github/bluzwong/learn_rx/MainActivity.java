@@ -1,11 +1,13 @@
 package com.github.bluzwong.learn_rx;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.os.Handler;
 import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.github.bluzwong.learn_rx.httprequest.*;
@@ -38,6 +40,13 @@ public class MainActivity extends AppCompatActivity {
 
         goRxVolley();
         goRxVolleyWithLambda();
+
+        findViewById(R.id.btn).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(MainActivity.this, NotificationActivity.class));
+            }
+        });
     }
 
     static class Timer {

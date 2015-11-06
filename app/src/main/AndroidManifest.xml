@@ -2,7 +2,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.github.bluzwong.learn_rx" >
 
-    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.INTERNET" />
+
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -18,9 +19,10 @@
             </intent-filter>
         </activity>
         <activity
-            android:name="com.github.bluzwong.learn_rx.TestGroovy"
+            android:name=".TestGroovy"
             android:label="@string/title_activity_test_groovy" >
-
+        </activity>
+        <activity android:name=".NotificationActivity" >
         </activity>
     </application>
 
