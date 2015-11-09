@@ -24,6 +24,11 @@
         </activity>
         <activity android:name=".NotificationActivity" >
         </activity>
+        <activity
+            android:name=".touch.TouchActivity"
+            android:label="@string/title_activity_touch"
+            android:theme="@style/AppTheme.NoActionBar" >
+        </activity>
     </application>
 
 </manifest>
