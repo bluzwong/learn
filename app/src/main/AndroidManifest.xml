@@ -29,6 +29,8 @@
             android:label="@string/title_activity_touch"
             android:theme="@style/AppTheme.NoActionBar" >
         </activity>
+        <activity android:name=".CustomViewActivity" >
+        </activity>
     </application>
 
 </manifest>
