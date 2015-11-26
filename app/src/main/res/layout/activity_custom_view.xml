@@ -9,9 +9,16 @@
         android:paddingTop="@dimen/activity_vertical_margin"
         android:paddingBottom="@dimen/activity_vertical_margin"
         tools:context="com.github.bluzwong.learn_rx.CustomViewActivity">
-
         <com.github.bluzwong.learn_rx.customviews.CircleView
+                android:visibility="invisible"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 />
+        <com.github.bluzwong.learn_rx.customviews.OnMeasureView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                >
+
+        </com.github.bluzwong.learn_rx.customviews.OnMeasureView>
+
 </RelativeLayout>
