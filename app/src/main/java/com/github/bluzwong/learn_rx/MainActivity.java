@@ -27,7 +27,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 
 public class MainActivity extends AppCompatActivity {
-
+    WebApi api;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -35,11 +35,12 @@ public class MainActivity extends AppCompatActivity {
         VolleyHelper.init(this.getApplicationContext());
         RxVolleyHelper.init(this.getApplicationContext());
 
-        goVolleySync();
+        /*goVolleySync();
         goVolleyAsync();
 
         goRxVolley();
-        goRxVolleyWithLambda();
+        goRxVolleyWithLambda();*/
+
 
         findViewById(R.id.btn).setOnClickListener(new View.OnClickListener() {
             @Override
@@ -47,6 +48,27 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(new Intent(MainActivity.this, NotificationActivity.class));
             }
         });
+        api = new WebApi();
+        findViewById(R.id.btn2).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                goRetrofit();
+            }
+        });
+    }
+
+    private void goRetrofit() {
+        Timer timer = new Timer();
+        timer.setStartTime();
+        api.myService.getUrls()
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(valueIndex -> {
+                    timer.printUsingTime("bruce-re");
+                    Log.i("bruce-re", "url1 => " + valueIndex.getUrl_result());
+                    Log.i("bruce-re", "url2 => " + valueIndex.getUrl_value1());
+                    Log.i("bruce-re", "url3 => " + valueIndex.getUrl_value2());
+                });
     }
 
     static class Timer {
