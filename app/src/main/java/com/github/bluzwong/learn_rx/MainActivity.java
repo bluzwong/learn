@@ -61,13 +61,15 @@ public class MainActivity extends AppCompatActivity {
         Timer timer = new Timer();
         timer.setStartTime();
         api.myService.getUrls()
+                .flatMap(valueIndex -> api.myService.getValue1(valueIndex.getUrl_value1())
+                        .zipWith(api.myService.getValue2(valueIndex.getUrl_value2()),
+                                Values::new))
+                .flatMap( values -> api.myService.getResult(URLS.RESULT_INDEX, values.value1.getValue1(), values.value2.getValue2()))
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(valueIndex -> {
+                .subscribe(result -> {
                     timer.printUsingTime("bruce-re");
-                    Log.i("bruce-re", "url1 => " + valueIndex.getUrl_result());
-                    Log.i("bruce-re", "url2 => " + valueIndex.getUrl_value1());
-                    Log.i("bruce-re", "url3 => " + valueIndex.getUrl_value2());
+                    Log.i("bruce-re", "result  => " + result.getResult());
                 });
     }
 

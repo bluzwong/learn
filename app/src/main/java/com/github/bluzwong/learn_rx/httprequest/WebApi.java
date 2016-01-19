@@ -7,6 +7,8 @@ import retrofit2.GsonConverterFactory;
 import retrofit2.Retrofit;
 import retrofit2.RxJavaCallAdapterFactory;
 import retrofit2.http.GET;
+import retrofit2.http.Query;
+import retrofit2.http.Url;
 import rx.Observable;
 
 import java.io.File;
@@ -20,6 +22,15 @@ public class WebApi {
     public interface MyService {
         @GET("/valueindex.php")
         Observable<ValueIndex> getUrls();
+
+        @GET
+        Observable<Value1> getValue1(@Url String url);
+
+        @GET
+        Observable<Value2> getValue2(@Url String url);
+
+        @GET
+        Observable<Result> getResult(@Url String url, @Query("value1") String value1, @Query("value2") String value2);
     }
     OkHttpClient client;
 
