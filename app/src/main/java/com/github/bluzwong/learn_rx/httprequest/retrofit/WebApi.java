@@ -1,7 +1,8 @@
-package com.github.bluzwong.learn_rx.httprequest;
+package com.github.bluzwong.learn_rx.httprequest.retrofit;
 
 import android.util.Log;
 import com.github.bluzwong.learn_rx.BaseApplication;
+import com.github.bluzwong.learn_rx.httprequest.*;
 import okhttp3.*;
 import retrofit2.GsonConverterFactory;
 import retrofit2.Retrofit;
@@ -36,15 +37,29 @@ public class WebApi {
 
     {
         File httpCacheDirectory = new File(BaseApplication.getContext().getExternalCacheDir(), "responses");
+        ICacheManager memoryCacheManager= new DiskCacheManager(BaseApplication.getContext());
+
         Interceptor interceptor = chain -> {
-            Request request = chain.request();
+            Request originRequest = chain.request();
+            Request request = originRequest;
             String urlString = request.url().url().toString();
             Log.i("bruce-re", "url => " + urlString);
+
+            boolean hasCached = memoryCacheManager.get(urlString);
+            if (hasCached) {
+                request = request.newBuilder().cacheControl(CacheControl.FORCE_CACHE).build();
+            }
+
             Response response = chain.proceed(request);
-            response.newBuilder()
-                    .removeHeader("Pragma")
-                    .header("Cache-Control", "public, only-if-cached, max-stale=" + 60 /* 1 minute */)
-                    .build();
+            // try load from cache
+            if (hasCached && response.code() == 504) {
+                // cache not exists, reload from origin
+                response = chain.proceed(originRequest);
+            }
+
+            if (!hasCached) {
+                memoryCacheManager.put(urlString, 10_000);
+            }
             return response;
         };
         client = new OkHttpClient.Builder()
