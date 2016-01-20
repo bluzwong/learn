@@ -11,10 +11,12 @@ import android.view.View;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.github.bluzwong.learn_rx.httprequest.*;
+import com.github.bluzwong.learn_rx.httprequest.retrofit.MemoryCacheManager;
 import com.github.bluzwong.learn_rx.httprequest.retrofit.WebApi;
 import com.github.bluzwong.learn_rx.httprequest.volley.RxVolleyHelper;
 import com.github.bluzwong.learn_rx.httprequest.volley.VolleyHelper;
 import rx.Observable;
+import rx.Subscriber;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action1;
 import rx.functions.Func1;
@@ -29,6 +31,8 @@ import java.util.concurrent.ExecutionException;
 
 public class MainActivity extends AppCompatActivity {
     WebApi api;
+    MemoryCacheManager memCache;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -50,6 +54,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
         api = new WebApi();
+        memCache = new MemoryCacheManager();
         findViewById(R.id.btn2).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -58,14 +63,31 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    private <T> Observable<T> memoryCacheWrapper(Observable<T> originOb, String key) {
+        return Observable.create(new Observable.OnSubscribe<T>() {
+            @Override
+            public void call(Subscriber<? super T> subscriber) {
+                Object obj = memCache.get(key);
+                if (obj != null) {
+                    subscriber.onNext((T) obj);
+                    return;
+                }
+                subscriber.onCompleted();
+            }
+        }).concatWith(originOb.map(t -> {
+            memCache.put(key, 10_000, t);
+            return t;
+        }));
+    }
+
     private void goRetrofit() {
         Timer timer = new Timer();
         timer.setStartTime();
-        api.myService.getUrls()
+        memoryCacheWrapper(api.myService.getUrls(), "0")
                 .flatMap(valueIndex -> api.myService.getValue1(valueIndex.getUrl_value1())
                         .zipWith(api.myService.getValue2(valueIndex.getUrl_value2()),
                                 Values::new))
-                .flatMap( values -> api.myService.getResult(URLS.RESULT_INDEX, values.value1.getValue1(), values.value2.getValue2()))
+                .flatMap(values -> api.myService.getResult(URLS.RESULT_INDEX, values.value1.getValue1(), values.value2.getValue2()))
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(result -> {
@@ -76,9 +98,11 @@ public class MainActivity extends AppCompatActivity {
 
     static class Timer {
         private long startTime;
+
         void setStartTime() {
             startTime = System.currentTimeMillis();
         }
+
         long getUsingTime() {
             return System.currentTimeMillis() - startTime;
         }

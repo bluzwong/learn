@@ -35,7 +35,7 @@ public class DiskCacheManager implements ICacheManager {
     @Override
     public boolean get(String key) {
         // todo remove this
-        if (1 == 1) return true;
+        if (1 == 1) return false;
         if (key == null || key.equals("")) {
             return false;
         }

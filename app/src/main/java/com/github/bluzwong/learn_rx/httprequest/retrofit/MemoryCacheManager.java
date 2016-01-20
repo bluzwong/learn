@@ -2,40 +2,39 @@ package com.github.bluzwong.learn_rx.httprequest.retrofit;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * Created by wangzhijie on 2016/1/20.
  */
-public class MemoryCacheManager implements ICacheManager {
-    private  final Map<String, CacheInfo> cacheInfoMap = new HashMap<>();
-
-    public  void put(String key, long timeout) {
+public class MemoryCacheManager {
+    private final Map<String, CacheInfoObject> cacheInfoObjectMap = new HashMap<>();
+    public void put(String key, long timeout, Object object) {
         if (key == null || key.equals("")) {
             return;
         }
         long now = System.currentTimeMillis();
-        CacheInfo cacheInfo = new CacheInfo(key, now, timeout);
-        cacheInfoMap.put(key, cacheInfo);
+        CacheInfoObject cacheInfoObject = new CacheInfoObject(key, now, timeout, object);
+        cacheInfoObjectMap.put(key, cacheInfoObject);
     }
 
-    public boolean get(String key) {
+    public Object get(String key) {
         if (key == null || key.equals("")) {
-            return false;
+            return null;
         }
-        if (!cacheInfoMap.containsKey(key)) {
-            return false;
+        if (!cacheInfoObjectMap.containsKey(key)) {
+            return null;
         }
-        CacheInfo cacheInfo = cacheInfoMap.get(key);
-        if (cacheInfo == null) {
-            return false;
+        CacheInfoObject cacheInfoObject = cacheInfoObjectMap.get(key);
+        if (cacheInfoObject == null) {
+            return null;
         }
         long now = System.currentTimeMillis();
-
-        if (now <= cacheInfo.getExpireTime()) {
+        if (now <= cacheInfoObject.getExpireTime()) {
             // ok
-            return true;
+            return cacheInfoObject.getObject();
         }
-        return false;
+        return null;
     }
 
 }
