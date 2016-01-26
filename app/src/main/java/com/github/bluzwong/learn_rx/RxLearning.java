@@ -2,11 +2,6 @@ package com.github.bluzwong.learn_rx;
 
 import rx.Observable;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
-import java.util.concurrent.TimeUnit;
-
 /**
  * Created by wangzhijie on 2015/10/15.
  */
@@ -39,5 +34,18 @@ public class RxLearning {
                     });
 
                 });*/
+
+        // 跳过出错的数据
+        Observable.just(1,2,0,3,4,5)
+                //.map(i -> 100 / i)
+                .flatMap(RxLearning::divide)
+                .subscribe(System.out::println);
+    }
+
+    private static Observable<Integer> divide(int number) {
+        return Observable.just(number)
+                .map(i -> 100 / i)
+                // 在这个observable出错时发射空
+                .onErrorResumeNext(Observable.empty());
     }
 }

@@ -63,7 +63,7 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    private <T> Observable<T> memoryCacheWrapper(Observable<T> originOb, String key) {
+    private <T> Observable<T> memoryCacheWrapper(Observable<T> originOb, String key, long timeout) {
         return Observable.create(new Observable.OnSubscribe<T>() {
             @Override
             public void call(Subscriber<? super T> subscriber) {
@@ -75,7 +75,7 @@ public class MainActivity extends AppCompatActivity {
                 subscriber.onCompleted();
             }
         }).concatWith(originOb.map(t -> {
-            memCache.put(key, 10_000, t);
+            memCache.put(key, timeout, t);
             return t;
         }));
     }
@@ -83,7 +83,7 @@ public class MainActivity extends AppCompatActivity {
     private void goRetrofit() {
         Timer timer = new Timer();
         timer.setStartTime();
-        memoryCacheWrapper(api.myService.getUrls(), "0")
+        memoryCacheWrapper(api.myService.getUrls(), "0", 10_000)
                 .flatMap(valueIndex -> api.myService.getValue1(valueIndex.getUrl_value1())
                         .zipWith(api.myService.getValue2(valueIndex.getUrl_value2()),
                                 Values::new))
