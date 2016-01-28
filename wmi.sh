@@ -1,0 +1,17 @@
+sendevent /dev/input/event0 0003 57 1423
+sendevent /dev/input/event0 0001 330 00000001
+sendevent /dev/input/event0 0001 325 00000001
+sendevent /dev/input/event0 0003 53 538
+sendevent /dev/input/event0 0003 54 595
+sendevent /dev/input/event0 0003 58 184
+sendevent /dev/input/event0 0003 48 00000006
+sendevent /dev/input/event0 0003 49 00000005
+sendevent /dev/input/event0 0000 0000 00000000
+sendevent /dev/input/event0 0003 58 120
+sendevent /dev/input/event0 0003 48 00000005
+sendevent /dev/input/event0 0003 49 00000004
+sendevent /dev/input/event0 0000 0000 00000000
+sendevent /dev/input/event0 0003 57 4294967295
+sendevent /dev/input/event0 0001 330 00000000
+sendevent /dev/input/event0 0001 325 00000000
+sendevent /dev/input/event0 0000 0000 00000000
