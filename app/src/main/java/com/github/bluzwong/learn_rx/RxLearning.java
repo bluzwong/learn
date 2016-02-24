@@ -1,6 +1,9 @@
 package com.github.bluzwong.learn_rx;
 
 import rx.Observable;
+import rx.Single;
+import rx.functions.Action1;
+import rx.functions.Func1;
 
 /**
  * Created by wangzhijie on 2015/10/15.
@@ -39,13 +42,23 @@ public class RxLearning {
         Observable.just(1,2,0,3,4,5)
                 //.map(i -> 100 / i)
                 .flatMap(RxLearning::divide)
-                .subscribe(System.out::println);
+                .subscribe(System.out::println, Throwable::printStackTrace);
     }
 
     private static Observable<Integer> divide(int number) {
         return Observable.just(number)
-                .map(i -> 100 / i)
+                .map(i -> {
+                    if (i == 4) {
+                        throw new RuntimeException();
+                    }
+                    return 100 / i;
+                })
                 // 在这个observable出错时发射空
-                .onErrorResumeNext(Observable.empty());
+                .onErrorResumeNext(throwable -> {
+                    if (throwable instanceof ArithmeticException) {
+                        return Observable.empty();
+                    }
+                    return Observable.error(throwable);
+                });
     }
 }
