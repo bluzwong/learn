@@ -29,7 +29,7 @@ public class RxLearning {
 
     private static void usingRxJava(List<Integer> dataList) {
         Observable.from(dataList)
-                .filter(integer -> integer % 2 == 0)
+                .filter(integer -> integer % 2 != 0)
                 .distinct()
                 .toSortedList((i1, i2) -> i1 - i2)
                 .subscribe(integers -> {
