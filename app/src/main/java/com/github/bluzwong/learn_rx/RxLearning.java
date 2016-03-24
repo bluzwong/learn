@@ -5,9 +5,7 @@ import rx.Single;
 import rx.functions.Action1;
 import rx.functions.Func1;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 
 public class RxLearning {
 
@@ -15,7 +13,7 @@ public class RxLearning {
 
         List<Integer> dataList = new ArrayList<>();
         for (int i = 0; i < 20; i++) {
-            dataList.add(new Random().nextInt(100));
+            dataList.add(new Random().nextInt(20));
         }
 
 
@@ -25,6 +23,21 @@ public class RxLearning {
 
         // todo 将 dataList 中偶数及重复项过滤掉，并且按从小到大排序
         usingRxJava(dataList);
+        usingCommonJava(dataList);
+    }
+
+    private static void usingCommonJava(List<Integer> dataList) {
+        List<Integer> tmpList = new ArrayList<>();
+
+        for (int integer : dataList) {
+            if (integer % 2 != 0 && !tmpList.contains(integer)) {
+                tmpList.add(integer);
+            }
+        }
+        Collections.sort(tmpList, (i1, i2) -> i1-i2);
+        for (Integer integer : tmpList) {
+            System.out.println("java after => " + integer);
+        }
     }
 
     private static void usingRxJava(List<Integer> dataList) {
